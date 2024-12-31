@@ -1,0 +1,36 @@
+# Node modules
+/node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+/node_modules/
+/.pnp/
+/.pnp.js
+
+# Next.js build output
+.next/
+
+# Test directories
+/coverage/
+
+# Miscellaneous
+.DS_Store
+.env
+*.env
+
+# Operating System files
+Thumbs.db
+Desktop.ini
+
+# NestJS build output
+/dist/
+
+# IDE specific files
+.vscode/
+.idea/

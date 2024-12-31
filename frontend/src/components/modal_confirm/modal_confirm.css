@@ -1,0 +1,13 @@
+.confirm-modal {
+    z-index: 1400 !important;
+}
+
+.modal-backdrop {
+    z-index: 1300 !important;
+}
+
+/* Đảm bảo modal hiển thị trên cùng */
+.confirm-modal .modal-content {
+    position: relative;
+    z-index: 1400;
+}

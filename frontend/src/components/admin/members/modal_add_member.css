@@ -1,0 +1,43 @@
+/* Tùy chỉnh backdrop */
+.modal-backdrop {
+    opacity: 0.5 !important;
+    background-color: rgba(33, 33, 33, 0.85) !important;
+    z-index: 1400 !important;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5 !important;
+}
+
+/* Tùy chỉnh modal */
+.custom-modal {
+    z-index: 1500 !important;
+}
+
+.custom-modal .modal-dialog {
+    max-width: 600px;
+}
+
+.custom-modal .modal-content {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.custom-modal .modal-header {
+    border-bottom: 1px solid #eee;
+    padding: 1rem 1.5rem;
+}
+
+.custom-modal .modal-body {
+    padding: 1.5rem;
+}
+
+.custom-modal .modal-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.custom-modal .close {
+    padding: 1rem;
+    margin: -1rem -1rem -1rem auto;
+}
