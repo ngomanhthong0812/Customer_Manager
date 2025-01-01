@@ -30,7 +30,7 @@ const UserLayout = ({ children }) => {
     };
 
     return (
-        <>
+        <div className="app-background">
             <Navbar bg="dark" variant="dark" expand="lg">
                 <Container>
                     <Navbar.Brand href="/">
@@ -65,10 +65,10 @@ const UserLayout = ({ children }) => {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            <div style={{ minHeight: 'calc(100vh - 56px)', backgroundColor: '#f5f5f5' }}>
+            <div style={{ minHeight: 'calc(100vh - 56px)' }}>
                 {children}
             </div>
-        </>
+        </div>
     );
 };
 

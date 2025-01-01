@@ -65,13 +65,37 @@ function FeedbackPage() {
     const { user } = useAuth();
     const [formData, setFormData] = useState({
         rating: 0,
-        feedback: ''
+        feedback: '',
+        reviewImage: null
     });
 
     const [errors, setErrors] = useState({
         rating: '',
-        feedback: ''
+        feedback: '',
+        reviewImage: ''
     });
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+
+        // Kiểm tra xem file có tồn tại không
+        if (!file) {
+            console.log("File is null or undefined");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            console.log("File size exceeds limit");
+            setErrors({ ...errors, reviewImage: 'Kích thước ảnh không được vượt quá 5MB' });
+            return;
+        }
+        console.log(file);
+
+        setFormData({ ...formData, reviewImage: file });
+        setErrors({ ...errors, reviewImage: '' });
+    };
+
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -84,24 +108,29 @@ function FeedbackPage() {
         // Kiểm tra nội dung không được để trống
         if (!formData.feedback) newErrors.feedback = 'Nội dung phản hồi không được để trống';
 
+        if (formData.feedback.length < 5) newErrors.feedback = 'Nội dung phản hồi chứa ít nhất 5 ký tự';
+
         setErrors(newErrors);
 
         // Nếu không có lỗi, gửi phản hồi
         if (Object.keys(newErrors).length === 0 && user) {
             try {
                 nProgress.done();
-
-                await createFeedback({
+                const formDataToSend = {
                     CustomerID: user?.id,
                     Content: formData.feedback,
                     Rating: formData.rating,
-                });
-                setFormData({ rating: 0, feedback: '' });
-                toast.success('Đã gửi đánh giá');
+                    ReviewImage: formData.reviewImage,
+                };
+
+                console.log(formDataToSend);
+
+                await createFeedback(formDataToSend);
+                setFormData({ rating: 0, feedback: '', reviewImage: null });
+                toast.success('Cảm ơn bạn đã đánh giá');
             } catch (error) {
                 console.error('Lỗi từ API:', error);
 
-                // Hiển thị thông báo lỗi khi đăng nhập thất bại
                 if (error.response && error.response.data) {
                     toast.error(error.response.data.message || 'Gửi Đánh giá thất bại.');
                 } else {
@@ -170,6 +199,25 @@ function FeedbackPage() {
                                 />
                                 <Form.Control.Feedback type="invalid">
                                     {errors.feedback}
+                                </Form.Control.Feedback>
+                            </Form.Group>
+
+                            {/* Image Upload */}
+                            <Form.Group className="mb-4">
+                                <Form.Label style={styles.ratingLabel}>
+                                    Thêm hình ảnh (không bắt buộc)
+                                </Form.Label>
+                                <Form.Control
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    isInvalid={!!errors.reviewImage}
+                                />
+                                <Form.Text className="text-muted">
+                                    Hỗ trợ các định dạng: JPG, PNG, GIF (Tối đa 5MB)
+                                </Form.Text>
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.reviewImage}
                                 </Form.Control.Feedback>
                             </Form.Group>
 

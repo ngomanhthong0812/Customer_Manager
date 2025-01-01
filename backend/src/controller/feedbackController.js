@@ -1,4 +1,8 @@
 const feedbackService = require('../service/feedbackService');
+const upload = require('../config/uploadConfig');
+
+// Middleware xử lý upload ảnh đơn
+const uploadSingle = upload.single('reviewImage');
 
 // Lấy tất cả Feedbacks
 const getAllFeedbacks = async (req, res) => {
@@ -54,49 +58,103 @@ const getFeedbackById = async (req, res) => {
 
 // Tạo Feedback mới
 const createFeedback = async (req, res) => {
-    const { CustomerID, Content, Rating } = req.body;
-    try {
-        const result = await feedbackService.create({ CustomerID, Content, Rating });
-        res.status(201).json({
-            success: true,
-            message: 'Tạo Feedback mới thành công',
-            data: result, // Trả về kết quả tạo Feedback mới
-        });
-    } catch (error) {
-        console.error('Error creating feedback:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi khi tạo Feedback mới',
-            error: error.message,
-        });
-    }
+    console.log(req.body);
+
+    uploadSingle(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({
+                success: false,
+                message: 'Lỗi khi upload ảnh',
+                error: err.message
+            });
+        }
+
+        try {
+            const { CustomerID, Content, Rating } = req.body;
+            const file = req.file;
+
+            // Kiểm tra và xử lý file upload
+            let ReviewImage = null;
+            if (file) {
+                // Kiểm tra thông tin file
+                if (!file.originalname || !file.filename) {
+                    throw new Error('Thông tin file không hợp lệ');
+                }
+                ReviewImage = `/uploads/reviews/${file.filename}`;
+            }
+
+            const result = await feedbackService.create({
+                CustomerID,
+                Content,
+                Rating,
+                ReviewImage
+            });
+
+            res.status(201).json({
+                success: true,
+                message: 'Tạo Feedback mới thành công',
+                data: result
+            });
+        } catch (error) {
+            console.error('Error creating feedback:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi tạo Feedback mới',
+                error: error.message
+            });
+        }
+    });
 };
 
 // Cập nhật Feedback
 const updateFeedback = async (req, res) => {
-    const id = req.params.id;
-    const { Content, Rating } = req.body;
-    try {
-        const result = await feedbackService.update(id, { Content, Rating });
-        if (result.affectedRows === 0) {
-            return res.status(404).json({
+    uploadSingle(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({
                 success: false,
-                message: 'Feedback không tồn tại',
+                message: 'Lỗi khi upload ảnh',
+                error: err.message
             });
         }
-        res.json({
-            success: true,
-            message: 'Cập nhật Feedback thành công',
-            data: result, // Trả về kết quả cập nhật
-        });
-    } catch (error) {
-        console.error(`Error updating feedback with ID ${id}:`, error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi khi cập nhật Feedback',
-            error: error.message,
-        });
-    }
+
+        try {
+            const id = req.params.id;
+            const { Content, Rating } = req.body;
+
+            // Lấy feedback cũ để kiểm tra
+            const oldFeedback = await feedbackService.getById(id);
+            if (!oldFeedback) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Feedback không tồn tại'
+                });
+            }
+
+            // Nếu có upload ảnh mới thì cập nhật đường dẫn
+            const ReviewImage = req.file
+                ? `/uploads/reviews/${req.file.filename}`
+                : oldFeedback.ReviewImage;
+
+            const result = await feedbackService.update(id, {
+                Content,
+                Rating,
+                ReviewImage
+            });
+
+            res.json({
+                success: true,
+                message: 'Cập nhật Feedback thành công',
+                data: result
+            });
+        } catch (error) {
+            console.error(`Error updating feedback:`, error);
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi cập nhật Feedback',
+                error: error.message
+            });
+        }
+    });
 };
 
 // Xóa Feedback

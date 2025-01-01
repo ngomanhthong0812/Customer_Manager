@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Container, Typography, Box } from '@mui/material';
+import { TextField, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { register } from '../services/authService';
 import NProgress from 'nprogress';
@@ -62,7 +62,7 @@ const Register = () => {
             try {
                 NProgress.start();
                 // Gọi API đăng nhập từ service
-                const response = await register(formData.fullname, formData.email, formData.password);
+                await register(formData.fullname, formData.email, formData.password);
 
                 // Hiển thị thông báo thành công
                 toast.success('Đăng kí thành công, vui lòng đăng nhập');
@@ -85,21 +85,9 @@ const Register = () => {
     };
 
     return (
-        <Container maxWidth="sm" style={{ marginTop: '50px' }}>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    padding: '20px',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                    backgroundColor: 'white'
-                }}
-            >
-                <Typography variant="h5" gutterBottom>
-                    Đăng ký tài khoản
-                </Typography>
+        <div className="auth-page">
+            <div className="auth-form">
+                <h2>Đăng ký</h2>
                 <form onSubmit={handleSubmit}>
                     <TextField
                         label="Họ và tên"
@@ -153,8 +141,8 @@ const Register = () => {
                         Đăng ký
                     </Button>
                 </form>
-            </Box>
-        </Container>
+            </div>
+        </div>
     );
 };
 

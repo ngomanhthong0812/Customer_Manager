@@ -3,82 +3,116 @@ const db = require('../config/db'); // Ensure correct DB connection
 const Feedback = {
     // Lấy tất cả Feedbacks
     getAll: async (page, limit, search, rating) => {
-        let sql = 'SELECT * FROM Feedbacks';
-        const params = [];
-        const conditions = [];
+        try {
+            let sql = `
+                SELECT 
+                    f.FeedbackID,
+                    f.CustomerID,
+                    m.FullName as CustomerName,
+                    f.Content,
+                    f.Rating,
+                    f.ReviewImage,
+                    DATE_FORMAT(f.CreatedAt, '%Y-%m-%d %H:%i:%s') as CreatedAt,
+                    DATE_FORMAT(f.UpdatedAt, '%Y-%m-%d %H:%i:%s') as UpdatedAt
+                FROM Feedbacks f
+                LEFT JOIN Members m ON f.CustomerID = m.MemberID
+                WHERE 1=1
+            `;
+            const params = [];
 
-        if (search) {
-            conditions.push('Content LIKE ?');
-            params.push(`%${search}%`);
+            if (search) {
+                sql += ` AND (m.FullName LIKE ? OR f.Content LIKE ?)`;
+                const searchPattern = `%${search}%`;
+                params.push(searchPattern, searchPattern);
+            }
+
+            if (rating) {
+                sql += ` AND f.Rating = ?`;
+                params.push(rating);
+            }
+
+            // Đếm tổng số bản ghi
+            const [[{ total }]] = await db.query(
+                `SELECT COUNT(*) as total FROM Feedbacks f 
+                LEFT JOIN Members m ON f.CustomerID = m.MemberID 
+                WHERE 1=1` +
+                (search ? ` AND (m.FullName LIKE ? OR f.Content LIKE ?)` : '') +
+                (rating ? ` AND f.Rating = ?` : ''),
+                params
+            );
+
+            // Thêm phân trang
+            sql += ` ORDER BY f.CreatedAt DESC LIMIT ? OFFSET ?`;
+            params.push(limit, (page - 1) * limit);
+
+            const [rows] = await db.query(sql, params);
+
+            const totalPages = Math.ceil(total / limit);
+
+            return {
+                feedbacks: rows,
+                totalFeedbacks: total,
+                totalPages: totalPages
+            };
+        } catch (error) {
+            throw error;
         }
-
-        if (rating) {
-            conditions.push('Rating = ?');
-            params.push(rating);
-        }
-
-        if (conditions.length > 0) {
-            sql += ' WHERE ' + conditions.join(' AND ');
-        }
-
-        // Add pagination
-        const offset = (page - 1) * limit;
-        sql += ' LIMIT ? OFFSET ?';
-        params.push(limit, offset);
-
-        const [rows] = await db.query(sql, params);
-
-        // Count total records
-        let countSql = 'SELECT COUNT(*) as total FROM Feedbacks';
-        if (conditions.length > 0) {
-            countSql += ' WHERE ' + conditions.join(' AND ');
-        }
-        const [[{ total }]] = await db.query(countSql, params.slice(0, -2));
-        const totalPages = Math.ceil(total / limit);
-
-        return {
-            feedbacks: rows,
-            totalFeedbacks: total,
-            totalPages: totalPages
-        };
     },
 
     // Lấy một Feedback theo ID
     getById: async (id) => {
         const sql = 'SELECT * FROM Feedbacks WHERE FeedbackID = ?';
         const [rows] = await db.query(sql, [id]);
-        return rows[0]; // Return the record if exists, otherwise null
+        return rows[0];
     },
 
     // Thêm một Feedback mới
     create: async (data) => {
-        const sql = `INSERT INTO Feedbacks (CustomerID, Content, Rating) 
-                     VALUES (?, ?, ?)`;
-        const [result] = await db.query(sql, [data.CustomerID, data.Content, data.Rating]);
-        return result; // Return the result of the insert
+        const sql = `INSERT INTO Feedbacks (
+            CustomerID, 
+            Content, 
+            Rating,
+            ReviewImage
+        ) VALUES (?, ?, ?, ?)`;
+
+        const [result] = await db.query(sql, [
+            data.CustomerID,
+            data.Content,
+            data.Rating,
+            data.ReviewImage || null
+        ]);
+        return result;
     },
 
     // Cập nhật một Feedback
     update: async (id, data) => {
         const sql = `UPDATE Feedbacks 
-                     SET Content = ?
+                     SET Content = ?,
+                         Rating = ?,
+                         ReviewImage = ?,
+                         UpdatedAt = CURRENT_TIMESTAMP
                      WHERE FeedbackID = ?`;
-        const [result] = await db.query(sql, [data.Content, id]);
-        return result; // Return the result of the update
+        const [result] = await db.query(sql, [
+            data.Content,
+            data.Rating,
+            data.ReviewImage || null,
+            id
+        ]);
+        return result;
     },
 
     // Xóa một Feedback
     delete: async (id) => {
         const sql = 'DELETE FROM Feedbacks WHERE FeedbackID = ?';
         const [result] = await db.query(sql, [id]);
-        return result; // Return the result of the delete
+        return result;
     },
 
     deleteByMemberId: async (memberId) => {
         const query = 'DELETE FROM Feedbacks WHERE CustomerID = ?';
         const [result] = await db.query(query, [memberId]);
         return result;
-    },
+    }
 };
 
 module.exports = Feedback;

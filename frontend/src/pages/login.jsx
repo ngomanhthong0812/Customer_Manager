@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Container, Typography, Box, Link } from '@mui/material';
+import { TextField, Button, Box, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom'; // Dùng để điều hướng trang
 import ModalForgotPasswordEmail from '../components/fargot_password/modal_forgot_password_email';
 import { toast } from 'react-toastify';
@@ -77,79 +77,65 @@ const Login = () => {
     };
 
     return (
-        <>
-            <Container maxWidth="sm" style={{ marginTop: '50px' }}>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        padding: '20px',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                        backgroundColor: 'white'
-                    }}
-                >
-                    <Typography variant="h5" gutterBottom>
+        <div className="auth-page">
+            <div className="auth-form">
+                <h2>Đăng nhập</h2>
+                <form onSubmit={handleSubmit}>
+                    <TextField
+                        label="Email"
+                        variant="outlined"
+                        fullWidth
+                        margin="normal"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        error={!!errors.email}
+                        helperText={errors.email}
+                    />
+                    <TextField
+                        label="Mật khẩu"
+                        type="password"
+                        variant="outlined"
+                        fullWidth
+                        margin="normal"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        error={!!errors.password}
+                        helperText={errors.password}
+                    />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        style={{ marginTop: '20px' }}
+                    >
                         Đăng nhập
-                    </Typography>
-                    <form onSubmit={handleSubmit}>
-                        <TextField
-                            label="Email"
-                            variant="outlined"
-                            fullWidth
-                            margin="normal"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            error={!!errors.email}
-                            helperText={errors.email}
-                        />
-                        <TextField
-                            label="Mật khẩu"
-                            type="password"
-                            variant="outlined"
-                            fullWidth
-                            margin="normal"
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            error={!!errors.password}
-                            helperText={errors.password}
-                        />
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            color="primary"
-                            fullWidth
-                            style={{ marginTop: '20px' }}
-                        >
-                            Đăng nhập
-                        </Button>
-                    </form>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '10px' }}>
+                    </Button>
+                </form>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '10px' }}>
+                    <Link
+                        component="button"
+                        variant="body2"
+                        onClick={handleForgotPassword}
+                        style={{ textDecoration: 'none' }}
+                    >
+                        Quên mật khẩu?
+                    </Link>
+                    <div>
+                        Chưa có tài khoản?
                         <Link
                             component="button"
                             variant="body2"
-                            onClick={handleForgotPassword}
+                            onClick={handleRegisterRedirect}
                             style={{ textDecoration: 'none' }}
                         >
-                            Quên mật khẩu?
+                            Đăng ký ngay
                         </Link>
-                        <div>
-                            Chưa có tài khoản?
-                            <Link
-                                component="button"
-                                variant="body2"
-                                onClick={handleRegisterRedirect}
-                                style={{ textDecoration: 'none' }}
-                            >
-                                Đăng ký ngay
-                            </Link>
-                        </div>
-                    </Box>
+                    </div>
                 </Box>
-            </Container>
+            </div>
             <ModalForgotPasswordEmail show={showModalForgotPasswordEmail} setShow={setShowModalForgotPasswordEmail} />
-        </>
+        </div>
     );
 };
 

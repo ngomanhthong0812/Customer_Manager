@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
-import { Line, Pie, Bar } from 'react-chartjs-2';
+import { Line, Pie } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -161,17 +161,26 @@ const Dashboard = () => {
     };
 
     // Add export functionality
-    const handleExport = async () => {
+    const handleExport = async (format) => {
         try {
             setIsLoading(true);
             NProgress.start();
 
-            const response = await exportStats(dateRange.startDate, dateRange.endDate);
+            const response = await exportStats(dateRange.startDate, dateRange.endDate, format);
 
-            // Tạo blob từ response data
-            const blob = new Blob([response.data], {
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            });
+            // Kiểm tra response có dữ liệu không
+            if (!response.data) {
+                throw new Error('Không có dữ liệu để xuất');
+            }
+
+            const fileType = format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            const fileExtension = format === 'pdf' ? 'pdf' : 'xlsx';
+
+            // Tạo blob từ response data và kiểm tra kích thước
+            const blob = new Blob([response.data], { type: fileType });
+            if (blob.size === 0) {
+                throw new Error('File xuất ra rỗng');
+            }
 
             // Tạo URL cho blob
             const url = window.URL.createObjectURL(blob);
@@ -179,16 +188,23 @@ const Dashboard = () => {
             // Tạo link tạm thời để download
             const a = document.createElement('a');
             a.href = url;
-            a.download = `thong-ke-${dateRange.startDate}-den-${dateRange.endDate}.xlsx`;
+            a.download = `thong-ke-${dateRange.startDate}-den-${dateRange.endDate}.${fileExtension}`;
+
+            // Thêm link vào document
             document.body.appendChild(a);
+
+            // Click để download
             a.click();
 
             // Cleanup
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }, 100);
+
         } catch (error) {
             console.error('Export error:', error);
-            toast.error('Lỗi khi xuất báo cáo');
+            toast.error(error.message || 'Lỗi khi xuất báo cáo');
         } finally {
             setIsLoading(false);
             NProgress.done();
@@ -237,11 +253,20 @@ const Dashboard = () => {
                     />
                     <Button
                         variant="success"
-                        onClick={handleExport}
+                        onClick={() => handleExport('excel')}
+                        disabled={isLoading}
+                        style={buttonStyle}
+                        className="me-2"
+                    >
+                        {isLoading ? 'Đang tải...' : 'Xuất Excel'}
+                    </Button>
+                    <Button
+                        variant="danger"
+                        onClick={() => handleExport('pdf')}
                         disabled={isLoading}
                         style={buttonStyle}
                     >
-                        {isLoading ? 'Đang tải...' : 'Xuất báo cáo'}
+                        {isLoading ? 'Đang tải...' : 'Xuất PDF'}
                     </Button>
                 </div>
             </div>
@@ -251,7 +276,7 @@ const Dashboard = () => {
                     <Card className="mb-4 shadow-sm">
                         <Card.Body style={cardStyle}>
                             <Card.Title style={{ fontSize: '1rem', marginBottom: '8px' }}>
-                                Tổng số thành viên
+                                Tổng số khách hàng
                             </Card.Title>
                             <Card.Text className="h2 mb-0">
                                 {stats.totalMembers}

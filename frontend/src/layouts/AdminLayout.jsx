@@ -104,39 +104,41 @@ const AdminLayout = ({ children }) => {
 
     return (
         <ThemeProvider theme={theme}>
-            <Box sx={{ display: 'flex' }}>
-                <StyledDrawer variant="permanent">
-                    <List>
-                        {menuItems.map((item) => (
-                            <StyledListItem
+            <div className="app-background">
+                <Box sx={{ display: 'flex' }}>
+                    <StyledDrawer variant="permanent">
+                        <List>
+                            {menuItems.map((item) => (
+                                <StyledListItem
+                                    button
+                                    key={item.text}
+                                    onClick={() => navigate(item.path)}
+                                    active={location.pathname === item.path}
+                                >
+                                    <ListItemIcon>
+                                        {item.icon}
+                                    </ListItemIcon>
+                                    <ListItemText primary={item.text} />
+                                </StyledListItem>
+                            ))}
+                            <LogoutListItem
                                 button
-                                key={item.text}
-                                onClick={() => navigate(item.path)}
-                                active={location.pathname === item.path}
+                                onClick={handleLogout}
+                                sx={{ marginTop: 2 }}
                             >
                                 <ListItemIcon>
-                                    {item.icon}
+                                    <LogoutIcon />
                                 </ListItemIcon>
-                                <ListItemText primary={item.text} />
-                            </StyledListItem>
-                        ))}
-                        <LogoutListItem
-                            button
-                            onClick={handleLogout}
-                            sx={{ marginTop: 2 }}
-                        >
-                            <ListItemIcon>
-                                <LogoutIcon />
-                            </ListItemIcon>
-                            <ListItemText primary="Đăng xuất" />
-                        </LogoutListItem>
-                    </List>
-                </StyledDrawer>
+                                <ListItemText primary="Đăng xuất" />
+                            </LogoutListItem>
+                        </List>
+                    </StyledDrawer>
 
-                <Container maxWidth="xl" sx={{ marginTop: '0' }}>
-                    {children}
-                </Container>
-            </Box>
+                    <Container maxWidth="xl" sx={{ marginTop: '0' }}>
+                        {children}
+                    </Container>
+                </Box>
+            </div>
         </ThemeProvider>
     );
 };

@@ -102,8 +102,8 @@ const FeedbackManagement = () => {
                         <th>ID Khách hàng</th>
                         <th>Nội dung</th>
                         <th>Đánh giá</th>
+                        <th>Ảnh đánh giá</th>
                         <th>Thời gian tạo</th>
-                        <th>Cập nhật lần cuối</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
@@ -118,11 +118,11 @@ const FeedbackManagement = () => {
                         feedbacks.map((feedback) => (
                             <tr key={feedback.FeedbackID}>
                                 <td>{feedback.FeedbackID}</td>
-                                <td>{feedback.CustomerID}</td>
+                                <td>{feedback.CustomerName}</td>
                                 <td>{feedback.Content}</td>
                                 <td>{renderStars(feedback.Rating)}</td>
+                                <td><img src={feedback.ReviewImage} alt="" /></td>
                                 <td>{new Date(feedback.CreatedAt).toLocaleString()}</td>
-                                <td>{new Date(feedback.UpdatedAt).toLocaleString()}</td>
                                 <td>
                                     <div className="d-flex gap-2">
                                         <Button

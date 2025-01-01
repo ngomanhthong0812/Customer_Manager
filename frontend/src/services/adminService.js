@@ -41,9 +41,9 @@ export const getMemberStatusStats = async (startDate, endDate) => {
 };
 
 // Xuất thống kê
-export const exportStats = async (startDate, endDate) => {
+export const exportStats = async (startDate, endDate, format) => {
     const response = await axiosConfig.get('/admin/export-stats', {
-        params: { startDate, endDate },
+        params: { startDate, endDate, format },
         responseType: 'arraybuffer'
     });
     return response;

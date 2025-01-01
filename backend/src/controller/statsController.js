@@ -60,15 +60,23 @@ const statsController = {
 
     // Xuất báo cáo thống kê
     exportStats: async (req, res) => {
-        const { startDate, endDate } = req.query;
-        try {
-            const report = await statsService.exportStats(startDate, endDate);
+        const { startDate, endDate, format } = req.query;
 
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', 'attachment; filename=statistics-report.xlsx');
+        try {
+            const report = await statsService.exportStats(startDate, endDate, format);
+
+            if (format === 'excel') {
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader('Content-Disposition', 'attachment; filename=statistics-report.xlsx');
+            } else if (format === 'pdf') {
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', 'attachment; filename=statistics-report.pdf');
+            }
 
             res.send(report);
         } catch (error) {
+            console.log(error);
+
             res.status(500).json({
                 success: false,
                 message: 'Lỗi khi xuất báo cáo thống kê',
