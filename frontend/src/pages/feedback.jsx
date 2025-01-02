@@ -115,17 +115,19 @@ function FeedbackPage() {
         // Nếu không có lỗi, gửi phản hồi
         if (Object.keys(newErrors).length === 0 && user) {
             try {
-                nProgress.done();
-                const formDataToSend = {
-                    CustomerID: user?.id,
-                    Content: formData.feedback,
-                    Rating: formData.rating,
-                    ReviewImage: formData.reviewImage,
-                };
+                const formDataToSend = new FormData(); // Tạo FormData
+                formDataToSend.append('CustomerID', user?.id); // Thêm text data
+                formDataToSend.append('Content', formData.feedback); // Thêm text data
+                formDataToSend.append('Rating', formData.rating); // Thêm text data
 
-                console.log(formDataToSend);
+                // Thêm file vào FormData
+                if (formData.reviewImage) {
+                    formDataToSend.append('file', formData.reviewImage);
+                }
 
-                await createFeedback(formDataToSend);
+                console.log('Dữ liệu gửi đi:', formDataToSend);
+
+                await createFeedback(formDataToSend); // Gửi FormData
                 setFormData({ rating: 0, feedback: '', reviewImage: null });
                 toast.success('Cảm ơn bạn đã đánh giá');
             } catch (error) {
@@ -141,6 +143,7 @@ function FeedbackPage() {
             }
         }
     };
+
 
     return (
         <Container style={styles.container}>

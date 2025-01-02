@@ -14,6 +14,7 @@ const InteractionFilter = ({ dateRange, setDateRange, filterType, setFilterType,
                             ...dateRange,
                             startDate: e.target.value
                         })}
+                        max={dateRange.endDate}
                     />
                 </Form.Group>
             </Col>
@@ -27,6 +28,7 @@ const InteractionFilter = ({ dateRange, setDateRange, filterType, setFilterType,
                             ...dateRange,
                             endDate: e.target.value
                         })}
+                        min={dateRange.startDate}
                     />
                 </Form.Group>
             </Col>
@@ -60,4 +62,4 @@ const InteractionFilter = ({ dateRange, setDateRange, filterType, setFilterType,
     );
 };
 
-export default InteractionFilter; 
+export default InteractionFilter;

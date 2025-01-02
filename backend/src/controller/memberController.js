@@ -87,10 +87,10 @@ const createMember = async (req, res) => {
         }
 
         // Kiểm tra số điện thoại không được để trống 
-        if (!data.Phone) {
+        if (!data.Phone || data.Phone.length !== 10) {
             return res.status(400).json({
                 success: false,
-                message: 'Số điện thoại không được để trống',
+                message: 'Số điện thoại không được để trống và phải chứa 10 ký tự',
             });
         }
 

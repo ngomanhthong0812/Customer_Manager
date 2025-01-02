@@ -29,7 +29,7 @@ export const getFeedbackById = async (id) => {
 
 // Tạo feedback mới
 export const createFeedback = async (data) => {
-    console.log(data);
+    console.log('data', data);
     try {
         const response = await axios.post('/feedback/', data);
         return response.data.data;

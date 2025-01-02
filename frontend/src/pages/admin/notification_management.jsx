@@ -18,6 +18,12 @@ const NotificationManagement = () => {
         Type: 'MEMBER'
     });
 
+    const [errors, setErrors] = useState({
+        Title: '',
+        Content: '',
+        Type: ''
+    });
+
     useEffect(() => {
         setFormData({ ...formData, SenderID: user?.id });
     }, [user]);
@@ -40,8 +46,36 @@ const NotificationManagement = () => {
         fetchNotifications();
     }, []);
 
+    const validateForm = () => {
+        const newErrors = {};
+
+        // Validate Title
+        if (!formData.Title.trim()) {
+            newErrors.Title = 'Tiêu đề không được để trống';
+        }
+
+        // Validate Content
+        if (!formData.Content.trim()) {
+            newErrors.Content = 'Nội dung không được để trống';
+        }
+
+        // Validate Type
+        if (!['MEMBER', 'ADMIN', 'ALL'].includes(formData.Type)) {
+            newErrors.Type = 'Loại thông báo không hợp lệ';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!validateForm()) {
+            toast.error('Vui lòng kiểm tra lại thông tin');
+            return;
+        }
+
         try {
             NProgress.start();
             // Gửi thông báo qua API
@@ -89,9 +123,15 @@ const NotificationManagement = () => {
                                     <Form.Control
                                         type="text"
                                         value={formData.Title}
-                                        onChange={(e) => setFormData({ ...formData, Title: e.target.value })}
-                                        required
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, Title: e.target.value });
+                                            if (errors.Title) setErrors({ ...errors, Title: '' });
+                                        }}
+                                        isInvalid={!!errors.Title}
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.Title}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
@@ -99,12 +139,19 @@ const NotificationManagement = () => {
                                     <Form.Label>Đối tượng nhận</Form.Label>
                                     <Form.Select
                                         value={formData.Type}
-                                        onChange={(e) => setFormData({ ...formData, Type: e.target.value })}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, Type: e.target.value });
+                                            if (errors.Type) setErrors({ ...errors, Type: '' });
+                                        }}
+                                        isInvalid={!!errors.Type}
                                     >
                                         <option value="MEMBER">Thành viên</option>
                                         <option value="ADMIN">Admin</option>
                                         <option value="ALL">All</option>
                                     </Form.Select>
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.Type}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={12}>
@@ -114,9 +161,15 @@ const NotificationManagement = () => {
                                         as="textarea"
                                         rows={3}
                                         value={formData.Content}
-                                        onChange={(e) => setFormData({ ...formData, Content: e.target.value })}
-                                        required
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, Content: e.target.value });
+                                            if (errors.Content) setErrors({ ...errors, Content: '' });
+                                        }}
+                                        isInvalid={!!errors.Content}
                                     />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.Content}
+                                    </Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                         </Row>
@@ -171,4 +224,4 @@ const NotificationManagement = () => {
     );
 };
 
-export default NotificationManagement; 
+export default NotificationManagement;

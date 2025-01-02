@@ -68,10 +68,11 @@ const notificationService = {
                 `, [result.insertId]);
             } else if (data.Type === 'MEMBER') {
                 await db.query(`
-                    INSERT INTO notification_readers (NotificationID, MemberID)
-                    SELECT ?, MemberID
-                    FROM members
-                    WHERE IsActive = 1
+                   INSERT INTO notification_readers (NotificationID, MemberID)
+                    SELECT ?, m.MemberID
+                    FROM members m
+                    INNER JOIN roles r ON m.RoleID = r.RoleID
+                    WHERE r.RoleName = 'Member'
                 `, [result.insertId]);
             } else if (data.Type === 'ALL') {
                 await db.query(`

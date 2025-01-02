@@ -16,8 +16,49 @@ const ModalAddMember = ({ show, setShow, onSuccess }) => {
         IsActive: true,
     });
 
+    const [errors, setErrors] = useState({
+        FullName: '',
+        Email: '',
+        Phone: '',
+        Password: ''
+    });
+
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!newMember.FullName.trim()) {
+            newErrors.FullName = 'Họ tên không được để trống';
+        }
+
+        if (!newMember.Email.trim()) {
+            newErrors.Email = 'Email không được để trống';
+        } else if (!/\S+@\S+\.\S+/.test(newMember.Email)) {
+            newErrors.Email = 'Email không hợp lệ';
+        }
+
+        if (!newMember.Phone.trim()) {
+            newErrors.Phone = 'Số điện thoại không được để trống';
+        } else if (!/^\d{10}$/.test(newMember.Phone)) {
+            newErrors.Phone = 'Số điện thoại phải có 10 chữ số';
+        }
+
+        if (!newMember.Password.trim()) {
+            newErrors.Password = 'Mật khẩu không được để trống';
+        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(newMember.Password)) {
+            newErrors.Password = 'Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
         try {
             NProgress.start();
             // Gọi API thêm member ở đây
@@ -35,6 +76,7 @@ const ModalAddMember = ({ show, setShow, onSuccess }) => {
                 RoleID: 345,
                 IsActive: true,
             });
+            setErrors({});
         } catch (error) {
             console.error('Error adding member:', error);
             toast.error(`Lỗi khi thêm thành viên: ${error.response?.data?.message || error.message}`);
@@ -63,8 +105,11 @@ const ModalAddMember = ({ show, setShow, onSuccess }) => {
                                     type="text"
                                     value={newMember.FullName}
                                     onChange={(e) => setNewMember({ ...newMember, FullName: e.target.value })}
-                                    required
+                                    isInvalid={!!errors.FullName}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.FullName}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                         <Col md={6}>
@@ -74,8 +119,11 @@ const ModalAddMember = ({ show, setShow, onSuccess }) => {
                                     type="email"
                                     value={newMember.Email}
                                     onChange={(e) => setNewMember({ ...newMember, Email: e.target.value })}
-                                    required
+                                    isInvalid={!!errors.Email}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.Email}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                     </Row>
@@ -88,7 +136,11 @@ const ModalAddMember = ({ show, setShow, onSuccess }) => {
                                     type="tel"
                                     value={newMember.Phone}
                                     onChange={(e) => setNewMember({ ...newMember, Phone: e.target.value })}
+                                    isInvalid={!!errors.Phone}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.Phone}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                         <Col md={6}>
@@ -98,8 +150,11 @@ const ModalAddMember = ({ show, setShow, onSuccess }) => {
                                     type="password"
                                     value={newMember.Password}
                                     onChange={(e) => setNewMember({ ...newMember, Password: e.target.value })}
-                                    required
+                                    isInvalid={!!errors.Password}
                                 />
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.Password}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                     </Row>

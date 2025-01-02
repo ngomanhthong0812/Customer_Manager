@@ -62,6 +62,7 @@ const NotificationPopup = () => {
     const fetchUnreadNotifications = async () => {
         try {
             const unreadNotifications = await getUnreadNotifications();
+            console.log(unreadNotifications);
             setUnreadCount(unreadNotifications.length);
         } catch (error) {
             console.error('Error fetching unread notifications:', error);

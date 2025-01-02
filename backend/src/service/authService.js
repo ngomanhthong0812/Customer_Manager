@@ -1,6 +1,9 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db'); // Kết nối cơ sở dữ liệu
+const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
 
 // Đăng nhập
 const login = (email, password) => {
@@ -12,7 +15,7 @@ const login = (email, password) => {
             if (results.length === 0) {
                 throw new Error('Email hoặc mật khẩu không đúng');
             }
-            
+
             const user = results[0];
             return bcrypt.compare(password, user.Password).then(isMatch => {
                 if (!isMatch) {
@@ -32,28 +35,38 @@ const login = (email, password) => {
 };
 
 // Đăng ký
-const register = (fullname, email, password) => {
-    const checkQuery = 'SELECT * FROM members WHERE email = ?';
-    const insertQuery = 'INSERT INTO members (Fullname, Email, Password, RoleID) VALUES (?, ?, ?, ?)';
+const register = async (fullname, email, password) => {
+    try {
+        // Kiểm tra email đã tồn tại
+        const [existingUsers] = await db.query(
+            'SELECT * FROM Members WHERE Email = ?',
+            [email]
+        );
 
-    return db.query(checkQuery, [email])
-        .then(([results]) => {
-            if (results.length > 0) {
-                throw new Error('Email đã tồn tại');
-            }
+        if (existingUsers.length > 0) {
+            throw new Error('Email đã được sử dụng');
+        }
 
-            return bcrypt.hash(password, 10); // Mã hóa mật khẩu
-        })
-        .then(hashedPassword => {
-            return db.query(insertQuery, [fullname, email, hashedPassword, 345]); // Mặc định RoleID là 345  (member)
-        })
-        .then(([result]) => {
-            return {
-                id: result.insertId,
-                fullname,
-                email,
-            };
-        });
+        // Mã hóa mật khẩu
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Thêm user mới
+        const [result] = await db.query(
+            'INSERT INTO Members (FullName, Email, Password, RoleID) VALUES (?, ?, ?, 345)',
+            [fullname, email, hashedPassword]
+        );
+
+        // Gửi email chào mừng
+        await sendWelcomeEmail(email, fullname);
+
+        return {
+            id: result.insertId,
+            email,
+            fullname
+        };
+    } catch (error) {
+        throw error;
+    }
 };
 
 const refreshToken = (oldToken) => {
@@ -76,8 +89,45 @@ const refreshToken = (oldToken) => {
     });
 };
 
+const sendWelcomeEmail = async (email, fullname) => {
+    try {
+        // Đọc template
+        const templatePath = path.join(__dirname, '../templates/registerSuccessTemplate.html');
+        let template = fs.readFileSync(templatePath, 'utf8');
+
+        // Thay thế các biến trong template
+        template = template
+            .replace('{{fullname}}', fullname)
+            .replace('{{email}}', email)
+            .replace('{{loginUrl}}', `${process.env.CLIENT_URL}/login`);
+
+        // Cấu hình email
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
+            }
+        });
+
+        // Gửi email
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Chào mừng bạn đến với hệ thống',
+            html: template
+        });
+
+        return true;
+    } catch (error) {
+        console.error('Error sending welcome email:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     login,
     register,
-    refreshToken
+    refreshToken,
+    sendWelcomeEmail
 };

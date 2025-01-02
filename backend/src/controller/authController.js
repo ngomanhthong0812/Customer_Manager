@@ -2,21 +2,25 @@ const authService = require('../service/authService');
 const logService = require('../service/logService');
 
 // Đăng ký
-const registerController = (req, res) => {
+const registerController = async (req, res) => {
     const { fullname, email, password } = req.body;
 
-    authService.register(fullname, email, password)
-        .then(user => {
-            res.status(201).json({
-                message: 'Đăng ký thành công',
-                user,
-            });
-        })
-        .catch(err => {
-            res.status(400).json({
-                message: err.message,
-            });
+    try {
+        const user = await authService.register(fullname, email, password);
+
+        res.status(201).json({
+            success: true,
+            message: 'Đăng ký thành công.',
+            user,
         });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(400).json({
+            success: false,
+            message: error.message || 'Đăng ký thất bại',
+            error: error.message
+        });
+    }
 };
 
 // Đăng nhập

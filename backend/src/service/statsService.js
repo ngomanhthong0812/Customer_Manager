@@ -96,41 +96,88 @@ const statsService = {
         // Lấy dữ liệu thống kê
         const memberStats = await statsService.getMemberStats(startDate, endDate);
         const interactionStats = await statsService.getInteractionStats(startDate, endDate);
+        const feedbackStats = await statsService.getFeedbackStats(startDate, endDate);
 
         if (format === 'excel') {
-            // Tạo workbook mới
             const workbook = new ExcelJS.Workbook();
 
-            // Thêm worksheet thống kê members
-            const memberSheet = workbook.addWorksheet('Member Statistics');
-            memberSheet.addRows([
-                ['Thống kê khách hàng'],
+            // Tạo worksheet
+            const sheet = workbook.addWorksheet('Thống kê');
+
+            // **PHẦN: Thống kê thành viên**
+            sheet.addRow(['Thống kê thành viên']);
+            sheet.mergeCells('A1:B1'); // Gộp ô tiêu đề
+            sheet.getCell('A1').font = { bold: true, size: 16 }; // Font chữ lớn, in đậm
+            sheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' }; // Căn giữa
+
+            sheet.addRows([
                 ['Tổng số khách hàng', memberStats.totalMembers],
                 ['Khách hàng đang hoạt động', memberStats.activeMembers],
                 ['Khách hàng không hoạt động', memberStats.inactiveMembers],
-                ['Thành viên đầu tiên', memberStats.earliestMember],
-                ['Thành viên mới nhất', memberStats.latestMember]
+                ['Khách hàng đầu tiên', memberStats.earliestMember],
+                ['Khách hàng mới nhất', memberStats.latestMember],
             ]);
 
-            // Thêm worksheet thống kê tương tác
-            const interactionSheet = workbook.addWorksheet('Interaction Statistics');
-            interactionSheet.addRow(['Tháng', 'Tổng tương tác', 'Số thành viên', 'Số khách hàng', 'Cuộc gọi', 'Email', 'Cuộc họp', 'Khác']);
+            // Định dạng cột
+            sheet.columns = [
+                { width: 30 }, // Cột A
+                { width: 20 }, // Cột B
+                { width: 20 }, // Cột C
+                { width: 20 }, // Cột D
+                { width: 20 }, // Cột E
+            ];
+
+            // **PHẦN: Thống kê tương tác**
+            const startRow = sheet.lastRow.number + 2; // Tạo khoảng cách 2 dòng trống
+            sheet.addRow(['Thống kê tương tác']);
+            sheet.mergeCells(`A${startRow}:H${startRow}`); // Gộp ô tiêu đề
+            sheet.getCell(`A${startRow}`).font = { bold: true, size: 16 }; // Font chữ lớn, in đậm
+            sheet.getCell(`A${startRow}`).alignment = { horizontal: 'center', vertical: 'middle' }; // Căn giữa
+
+            sheet.addRow(['Tháng', 'Tổng tương tác', 'Tổng phản hồi', 'Số thành viên', 'Số khách hàng']);
+            const headerRow = sheet.lastRow;
+
+            // Định dạng header
+            headerRow.eachCell(cell => {
+                cell.font = { bold: true }; // In đậm
+                cell.alignment = { horizontal: 'center', vertical: 'middle' }; // Căn giữa
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFCC00' } }; // Màu nền vàng
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' },
+                };
+            });
+
+            // Thêm dữ liệu
             interactionStats.forEach(stat => {
-                interactionSheet.addRow([
+                sheet.addRow([
                     stat.month,
                     stat.totalInteractions,
+                    feedbackStats.totalFeedbacks || 0,
                     stat.uniqueMembers,
                     stat.uniqueCustomers,
-                    stat.calls,
-                    stat.emails,
-                    stat.meetings,
-                    stat.others
                 ]);
             });
 
-            // Buffer để trả về
+            // Định dạng viền cho các ô dữ liệu
+            sheet.eachRow((row, rowNumber) => {
+                if (rowNumber > startRow) {
+                    row.eachCell(cell => {
+                        cell.border = {
+                            top: { style: 'thin' },
+                            left: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            right: { style: 'thin' },
+                        };
+                    });
+                }
+            });
+
             return await workbook.xlsx.writeBuffer();
-        } else if (format === 'pdf') {
+        }
+        else if (format === 'pdf') {
             // Tạo document PDF mới với font hỗ trợ tiếng Việt
             const doc = new PDFDocument({
                 font: 'Helvetica',
@@ -161,12 +208,9 @@ const statsService = {
                 doc.font('Helvetica').fontSize(12).text(
                     `Thang ${stat.month}:
                     - Tong tuong tac: ${stat.totalInteractions}
+                    - Tong phan hoi: ${feedbackStats.totalFeedbacks || 0}
                     - So thanh vien: ${stat.uniqueMembers}
-                    - So khach hang: ${stat.uniqueCustomers}
-                    - Cuoc goi: ${stat.calls}
-                    - Email: ${stat.emails}
-                    - Cuoc hop: ${stat.meetings}
-                    - Khac: ${stat.others}`
+                    - So khach hang: ${stat.uniqueCustomers}`
                 );
                 doc.moveDown();
             });

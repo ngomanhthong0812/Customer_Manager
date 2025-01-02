@@ -58,14 +58,12 @@ const getFeedbackById = async (req, res) => {
 
 // Tạo Feedback mới
 const createFeedback = async (req, res) => {
-    console.log(req.body);
-
-    uploadSingle(req, res, async (err) => {
+    upload.single('file')(req, res, async (err) => {
         if (err) {
             return res.status(400).json({
                 success: false,
                 message: 'Lỗi khi upload ảnh',
-                error: err.message
+                error: err.message,
             });
         }
 
@@ -76,35 +74,32 @@ const createFeedback = async (req, res) => {
             // Kiểm tra và xử lý file upload
             let ReviewImage = null;
             if (file) {
-                // Kiểm tra thông tin file
-                if (!file.originalname || !file.filename) {
-                    throw new Error('Thông tin file không hợp lệ');
-                }
                 ReviewImage = `/uploads/reviews/${file.filename}`;
             }
-
+            
             const result = await feedbackService.create({
                 CustomerID,
                 Content,
                 Rating,
-                ReviewImage
+                ReviewImage,
             });
 
             res.status(201).json({
                 success: true,
                 message: 'Tạo Feedback mới thành công',
-                data: result
+                data: result,
             });
         } catch (error) {
             console.error('Error creating feedback:', error);
             res.status(500).json({
                 success: false,
                 message: 'Lỗi khi tạo Feedback mới',
-                error: error.message
+                error: error.message,
             });
         }
     });
 };
+
 
 // Cập nhật Feedback
 const updateFeedback = async (req, res) => {

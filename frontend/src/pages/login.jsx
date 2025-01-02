@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Box, Link } from '@mui/material';
+import { TextField, Button, Box, Link, IconButton, InputAdornment } from '@mui/material';
 import { useNavigate } from 'react-router-dom'; // Dùng để điều hướng trang
 import ModalForgotPasswordEmail from '../components/fargot_password/modal_forgot_password_email';
 import { toast } from 'react-toastify';
 import { login } from '../services/authService';
 import NProgress from "nprogress";
 import { useAuth } from '../contexts/AuthProvider';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const Login = () => {
     const { loginAuth } = useAuth();
 
     const [showModalForgotPasswordEmail, setShowModalForgotPasswordEmail] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -93,7 +95,7 @@ const Login = () => {
                     />
                     <TextField
                         label="Mật khẩu"
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         variant="outlined"
                         fullWidth
                         margin="normal"
@@ -101,6 +103,18 @@ const Login = () => {
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         error={!!errors.password}
                         helperText={errors.password}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        edge="end"
+                                    >
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }}
                     />
                     <Button
                         type="submit"

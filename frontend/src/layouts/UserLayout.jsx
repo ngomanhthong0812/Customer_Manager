@@ -35,9 +35,9 @@ const UserLayout = ({ children }) => {
                 <Container>
                     <Navbar.Brand href="/">
                         <img
-                            src="/favicon.ico"
+                            src="/logo.png"
                             alt="Logo"
-                            style={{ width: '40px', height: '40px' }}
+                            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                         />
                     </Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />

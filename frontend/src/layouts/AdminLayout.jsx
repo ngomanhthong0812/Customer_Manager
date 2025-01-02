@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 import NProgress from 'nprogress';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-const drawerWidth = 240;
+const drawerWidth = 250;
 
 // Định nghĩa theme colors
 const themeColors = {
@@ -70,7 +70,7 @@ const LogoutListItem = styled(ListItem)({
 
 const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
-    { text: 'Quản lý thành viên', icon: <PeopleIcon />, path: '/admin/members' },
+    { text: 'Quản lý khách hàng', icon: <PeopleIcon />, path: '/admin/members' },
     { text: 'Quản lý phản hồi', icon: <FeedbackIcon />, path: '/admin/feedbacks' },
     { text: 'Quản lý tương tác', icon: <ContactsIcon />, path: '/admin/interactions' },
     { text: 'Quản lý thông báo', icon: <NotificationsIcon />, path: '/admin/notifications' },

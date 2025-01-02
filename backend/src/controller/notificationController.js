@@ -21,7 +21,7 @@ const notificationController = {
             });
         }
     },
-
+    
     // Tạo thông báo mới
     create: async (req, res) => {
         try {

@@ -43,6 +43,8 @@ function ModalForgotPassword({ show, setShow, email }) {
             newErrors.newPassword = 'Vui lòng nhập mật khẩu mới';
         } else if (formData.newPassword.length < 6) {
             newErrors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự';
+        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(formData.newPassword)) {
+            newErrors.newPassword = 'Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt';
         }
 
         // Validate nhập lại mật khẩu

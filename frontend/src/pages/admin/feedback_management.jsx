@@ -121,7 +121,15 @@ const FeedbackManagement = () => {
                                 <td>{feedback.CustomerName}</td>
                                 <td>{feedback.Content}</td>
                                 <td>{renderStars(feedback.Rating)}</td>
-                                <td><img src={feedback.ReviewImage} alt="" /></td>
+                                {feedback.ReviewImage ?
+                                    <td>
+                                        <img src={`${process.env.REACT_APP_SOCKET_URL}${feedback.ReviewImage}`}
+                                            alt=""
+                                            style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                                    </td> :
+                                    <td>
+
+                                    </td>}
                                 <td>{new Date(feedback.CreatedAt).toLocaleString()}</td>
                                 <td>
                                     <div className="d-flex gap-2">
